@@ -1,0 +1,43 @@
+---
+name: Benchmark Radosgw
+on:
+  push:
+    branches:
+      - "s3gw"
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-radosgw.yml
+
+  bench:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    steps:
+
+      - name: Checkout S3GW Tools
+        uses: actions/checkout@v3
+        with:
+          repository: aquarist-labs/s3gw-tools
+          ref: main
+          path: s3gw-tools
+
+      - name: Download Radosgw Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.build.outputs.artifact_id }}
+
+      - name: Unpack Artifacts
+        run: |
+          tar -xvf build-results.tar.gz
+
+      - name: Install Warp
+        run: |
+          go install github.com/minio/warp@latest
+
+      - name: Bench Radosgw
+        run: |
+          ceph/build/bin/radosgw --rgw-backend-store sfs --debug-rgw 1 &
+
+          s3gw-tools/tests/s3gw-bench.sh localhost:7480 --small

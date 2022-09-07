@@ -75,7 +75,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y s3cmd
 
-      - name: Run Tests
+      - name: Run Smoke Tests
         run: |
           mkdir storage
           docker run -d \
@@ -90,6 +90,9 @@ jobs:
           # It also serves to make sure the gateway takes no more than 5 seconds
           # to boot up.
 
-          echo "Running Tests:\n"
+          echo "Running Smoke Tests:\n"
           s3gw-tools/tests/s3gw-smoke-test.sh localhost:7480
-          # TODO: Run tests here
+          echo "Running S3Tests:\n"
+          s3gw-tools/tests/s3gw-s3tests.sh localhost:7480
+          echo "Running Users REST API Tests:\n"
+          python3 s3gw-tools/tests/s3gw-users-rest-api-test.py localhost:7480
