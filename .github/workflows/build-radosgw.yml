@@ -5,6 +5,9 @@ on:
     - cron: '0 0 * * 0'  # refresh ccache every sunday night
 
   push:
+    branches:
+      - "build-selfhosted-runner"
+
     tags:
       - "s3gw-v*"
 
@@ -19,7 +22,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on:
+      - self-hosted
+      - linux
+      - x64
     outputs:
       artifact_id: ${{ steps.artifact_id.outputs.artifact_id }}
 
@@ -48,7 +54,7 @@ jobs:
           docker run --rm \
             -v $GITHUB_WORKSPACE/ceph:/srv/ceph \
             -e WITH_TESTS=ON \
-            -e NPROC=4 \
+            -e CMAKE_BUILD_TYPE=RelWithDebInfo \
             mrohrich/buildenv-radosgw:latest
 
       - name: Compress Build Results
