@@ -1,0 +1,23 @@
+---
+name: Fast Builds
+
+on:
+
+  workflow_dispatch:   # Or manually - for testing
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+          path: ceph
+
+      - name: Build
+        uses: docker://mrohrich/s3gw-builder:latest
+        with:
+          args: -v ceph:/srv/ceph
+          entrypoint: /srv/ceph/qa/rgw/store/sfs/build-radosgw.sh
